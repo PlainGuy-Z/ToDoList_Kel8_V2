@@ -1,81 +1,97 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
-const TASKS_KEY = 'zenboard-tasks';
+/**
+ * useTasks — multi-user task management hook.
+ * Data task disimpan per-user menggunakan key: 'zenboard-tasks-{userId}'
+ * sehingga setiap akun memiliki data task yang terisolasi.
+ */
 
-/** Load tasks from localStorage */
-const loadTasks = () => {
+/** Buat localStorage key unik untuk setiap user */
+const getTasksKey = (userId) => `zenboard-tasks-${userId}`;
+
+/** Load tasks dari localStorage berdasarkan userId */
+const loadTasks = (userId) => {
   try {
-    const raw = localStorage.getItem(TASKS_KEY);
+    const raw = localStorage.getItem(getTasksKey(userId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    // Validate: must be an array of objects
     return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
 };
 
-/** Save tasks to localStorage */
-const saveTasks = (tasks) => {
+/** Save tasks ke localStorage untuk userId tertentu */
+const saveTasks = (userId, tasks) => {
   try {
-    localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+    localStorage.setItem(getTasksKey(userId), JSON.stringify(tasks));
   } catch (e) {
     console.error('Failed to save tasks:', e);
   }
 };
 
-/**
- * useTasks — single-user task management hook.
- *
- * FIX: Removed the flaky `initialized` ref pattern.
- * Instead, we initialize state directly from localStorage (lazy initializer),
- * so the save effect runs correctly on every change without race conditions.
- */
 export default function useTasks() {
-  // Lazy initializer: runs once on mount, reads localStorage synchronously
-  const [tasks, setTasks] = useState(() => loadTasks());
+  const { currentUser } = useAuth();
+  const userId = currentUser?.userId ?? null;
 
-  // Save to localStorage on every tasks change
+  // State tasks diinisialisasi dari localStorage sesuai user yang login
+  const [tasks, setTasks] = useState(() => {
+    if (!userId) return [];
+    return loadTasks(userId);
+  });
+
+  // Saat user berganti (login akun berbeda), muat ulang tasks milik user tersebut
   useEffect(() => {
-    saveTasks(tasks);
-  }, [tasks]);
+    if (userId) {
+      setTasks(loadTasks(userId));
+    } else {
+      setTasks([]);
+    }
+  }, [userId]);
 
-  /** Add a new task */
-// Ubah baris addTask:
-const addTask = useCallback((title, category = 'Personal', priority = 'Medium', dueDate = null) => {
-  if (!title.trim()) return;
-  const newTask = {
-    id: Date.now().toString(),
-    title: title.trim(),
-    category,
-    priority,
-    dueDate: dueDate || null,          // ← tambah ini
-    completed: false,
-    createdAt: new Date().toISOString(),
-    completedAt: null,
-  };
-  setTasks(prev => [newTask, ...prev]);
-}, []);
+  // Simpan ke localStorage setiap kali tasks berubah (hanya jika user aktif)
+  useEffect(() => {
+    if (userId) {
+      saveTasks(userId, tasks);
+    }
+  }, [tasks, userId]);
 
-  /** Toggle task completion */
+  /** Tambah task baru */
+  const addTask = useCallback((title, category = 'Personal', priority = 'Medium', dueDate = null) => {
+    if (!title.trim()) return;
+    const newTask = {
+      id:          Date.now().toString(),
+      title:       title.trim(),
+      category,
+      priority,
+      dueDate:     dueDate || null,
+      completed:   false,
+      createdAt:   new Date().toISOString(),
+      completedAt: null,
+    };
+    setTasks(prev => [newTask, ...prev]);
+  }, []);
+
+  /** Toggle status selesai/belum */
   const toggleTask = useCallback((id) => {
     setTasks(prev => prev.map(t =>
       t.id === id
         ? {
             ...t,
-            completed: !t.completed,
-            completedAt: !t.completed ? new Date().toISOString() : null
+            completed:   !t.completed,
+            completedAt: !t.completed ? new Date().toISOString() : null,
           }
         : t
     ));
   }, []);
 
-  /** Delete a task */
+  /** Hapus task */
   const deleteTask = useCallback((id) => {
     setTasks(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  /** Edit task fields (title or any other field) */
+  /** Edit field task */
   const editTask = useCallback((id, updates) => {
     setTasks(prev => prev.map(t =>
       t.id === id ? { ...t, ...updates } : t

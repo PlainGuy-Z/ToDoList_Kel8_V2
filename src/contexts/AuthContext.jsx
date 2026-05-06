@@ -112,40 +112,40 @@ export function AuthProvider({ children }) {
 
   /**
    * login — validate credentials against user registry.
-   * Falls back to legacy mode (accept any username) if no users registered yet.
+   * User WAJIB sudah registrasi terlebih dahulu. Tidak ada bypass/legacy mode.
    */
   const login = (username, password) => {
     if (!username || username.trim().length < 2) {
       return { success: false, message: 'Masukkan username Anda.' };
     }
+    if (!password) {
+      return { success: false, message: 'Masukkan kata sandi Anda.' };
+    }
 
     const users = loadUsers();
 
-    // ── Legacy mode: no users registered yet ──
+    // Jika belum ada user terdaftar sama sekali, tolak login dan arahkan ke registrasi
     if (users.length === 0) {
-      const session = {
-        userId:   'legacy',
-        username: username.trim(),
-        email:    '',
-        avatar:   '🌿',
-        loginAt:  new Date().toISOString(),
+      return {
+        success: false,
+        message: 'Belum ada akun terdaftar. Silakan daftar terlebih dahulu.',
       };
-      setCurrentUser(session);
-      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-      return { success: true };
     }
 
-    // ── Normal mode: validate credentials ──
+    // Cari user berdasarkan username (case-insensitive)
     const user = users.find(
       u => u.username.toLowerCase() === username.trim().toLowerCase()
     );
     if (!user) {
-      return { success: false, message: 'Username tidak ditemukan.' };
+      return { success: false, message: 'Username tidak ditemukan. Sudah daftar?' };
     }
+
+    // Validasi password
     if (user.password !== password) {
       return { success: false, message: 'Kata sandi salah.' };
     }
 
+    // Buat sesi dengan userId yang benar agar data task terisolasi per user
     const session = {
       userId:   user.id,
       username: user.username,
