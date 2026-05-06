@@ -8,8 +8,9 @@ export default function StatsPage() {
   const { pomodorosToday } = usePomodoro();
   const { streak } = useStats(tasks, pomodorosToday);
 
-  const completedTasks = tasks.filter(t => t.completed);
-  const totalTasks = tasks.length;
+  const activeTasksPool = tasks.filter((t) => !t.archivedAt);
+  const completedTasks = activeTasksPool.filter(t => t.completed);
+  const totalTasks = activeTasksPool.length;
   const completionRate = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
 
   // Best streak (We only have current streak in useStats, but we can simulate "best streak" using current streak if no historical data is stored. For a real app, useStats should track it)
@@ -43,31 +44,72 @@ export default function StatsPage() {
       const dateStr = d.toISOString().slice(0, 10);
       const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
       // Count completions for this day
-      const count = tasks.filter(t => t.completed && t.createdAt?.slice(0, 10) === dateStr).length;
+      const count = activeTasksPool.filter(t => t.completed && t.completedAt?.slice(0, 10) === dateStr).length;
       days.push({ label: dayName, count, isToday: i === 0 });
     }
     const maxCount = Math.max(...days.map(d => d.count), 1);
     return days.map(d => ({ ...d, heightPercent: (d.count / maxCount) * 100 }));
-  }, [tasks]);
+  }, [activeTasksPool]);
 
   // By Category
   const categoryStats = useMemo(() => {
     const cats = ['Work', 'Study', 'Personal'];
     return cats.map(c => {
-      const catTasks = tasks.filter(t => t.category === c);
+      const catTasks = activeTasksPool.filter(t => t.category === c);
       const count = catTasks.length;
       return { label: c, count, percent: totalTasks > 0 ? (count / totalTasks) * 100 : 0 };
     });
-  }, [tasks, totalTasks]);
+  }, [activeTasksPool, totalTasks]);
 
   // By Priority
   const priorityStats = useMemo(() => {
     return {
-      High: tasks.filter(t => t.priority === 'High').length,
-      Medium: tasks.filter(t => t.priority === 'Medium').length,
-      Low: tasks.filter(t => t.priority === 'Low').length,
+      High: activeTasksPool.filter(t => t.priority === 'High').length,
+      Medium: activeTasksPool.filter(t => t.priority === 'Medium').length,
+      Low: activeTasksPool.filter(t => t.priority === 'Low').length,
     };
-  }, [tasks]);
+  }, [activeTasksPool]);
+
+  const productivityInsights = useMemo(() => {
+    const now = new Date();
+    const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weeklyStart = new Date(dayStart);
+    weeklyStart.setDate(dayStart.getDate() - 6);
+
+    const weekCompletions = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(weeklyStart);
+      d.setDate(weeklyStart.getDate() + i);
+      const key = d.toISOString().slice(0, 10);
+      const count = completedTasks.filter((task) => task.completedAt?.slice(0, 10) === key).length;
+      return { key, day: d.toLocaleDateString('id-ID', { weekday: 'long' }), count };
+    });
+
+    const weeklyCreated = activeTasksPool.filter((task) => {
+      const created = task.createdAt ? new Date(task.createdAt) : null;
+      return created && created >= weeklyStart && created <= now;
+    }).length;
+    const weeklyDone = weekCompletions.reduce((sum, item) => sum + item.count, 0);
+    const weeklyCompletionRate = weeklyCreated > 0 ? Math.round((weeklyDone / weeklyCreated) * 100) : 0;
+
+    const bestDay = [...weekCompletions].sort((a, b) => b.count - a.count)[0];
+
+    const overdueByCategory = activeTasksPool
+      .filter((task) => !task.completed && task.dueDate)
+      .reduce((acc, task) => {
+        const due = new Date(task.dueDate);
+        if (Number.isNaN(due.getTime()) || due >= dayStart) return acc;
+        acc[task.category] = (acc[task.category] ?? 0) + 1;
+        return acc;
+      }, {});
+
+    const mostDelayedEntry = Object.entries(overdueByCategory).sort((a, b) => b[1] - a[1])[0] ?? null;
+
+    return {
+      weeklyCompletionRate,
+      bestDay: bestDay?.count ? bestDay : null,
+      mostDelayedCategory: mostDelayedEntry ? { category: mostDelayedEntry[0], count: mostDelayedEntry[1] } : null,
+    };
+  }, [activeTasksPool, completedTasks]);
 
   // SVG Circle calculations
   const size = 160;
@@ -101,6 +143,31 @@ export default function StatsPage() {
             <div className="text-xs text-zen-muted dark:text-zen-muted-dark mt-1">{stat.label}</div>
           </div>
         ))}
+      </section>
+
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 zen-slide-up" style={{ animationDelay: '0.12s' }}>
+        <div className="zen-card p-4">
+          <p className="text-xs text-zen-muted dark:text-zen-muted-dark">Weekly Completion Rate</p>
+          <p className="text-2xl font-bold text-zen-text dark:text-zen-text-dark mt-1">
+            {productivityInsights.weeklyCompletionRate}%
+          </p>
+        </div>
+        <div className="zen-card p-4">
+          <p className="text-xs text-zen-muted dark:text-zen-muted-dark">Hari Paling Produktif</p>
+          <p className="text-sm font-semibold text-zen-text dark:text-zen-text-dark mt-1">
+            {productivityInsights.bestDay
+              ? `${productivityInsights.bestDay.day} (${productivityInsights.bestDay.count} selesai)`
+              : 'Belum ada data minggu ini'}
+          </p>
+        </div>
+        <div className="zen-card p-4">
+          <p className="text-xs text-zen-muted dark:text-zen-muted-dark">Kategori Paling Tertunda</p>
+          <p className="text-sm font-semibold text-zen-text dark:text-zen-text-dark mt-1">
+            {productivityInsights.mostDelayedCategory
+              ? `${productivityInsights.mostDelayedCategory.category} (${productivityInsights.mostDelayedCategory.count} overdue)`
+              : 'Tidak ada overdue'}
+          </p>
+        </div>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

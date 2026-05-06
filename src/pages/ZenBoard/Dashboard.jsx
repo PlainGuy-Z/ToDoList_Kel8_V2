@@ -10,7 +10,16 @@ import PomodoroTimer from '../../components/PomodoroTimer';
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
-  const { tasks, toggleTask, deleteTask, editTask } = useTasks();
+  const {
+    tasks,
+    toggleTask,
+    deleteTask,
+    editTask,
+    togglePin,
+    addSubtask,
+    toggleSubtask,
+    deleteSubtask,
+  } = useTasks();
   const pomodoro = usePomodoro();
   const stats = useStats(tasks, pomodoro.pomodorosToday);
 
@@ -27,6 +36,15 @@ export default function Dashboard() {
   });
 
   const activeTasks = tasks.filter(t => !t.completed);
+  const dueTodayCount = tasks.filter((t) => {
+    if (t.completed || !t.dueDate) return false;
+    const due = new Date(t.dueDate);
+    if (Number.isNaN(due.getTime())) return false;
+    const today = new Date();
+    const dueStart = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    return dueStart <= todayStart;
+  }).length;
   const todaysFocus = activeTasks.slice(0, 5);
 
   return (
@@ -55,6 +73,22 @@ export default function Dashboard() {
         />
       </section>
 
+      <section className="zen-slide-up" style={{ animationDelay: '0.12s' }}>
+        <div className="zen-card p-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-zen-text dark:text-zen-text-dark">
+              Ringkasan Hari Ini
+            </p>
+            <p className="text-sm text-zen-muted dark:text-zen-muted-dark mt-0.5">
+              {dueTodayCount} tugas perlu perhatian (deadline hari ini atau terlewat).
+            </p>
+          </div>
+          <Link to="/app/today" className="zen-btn-secondary whitespace-nowrap">
+            Buka Hari Ini
+          </Link>
+        </div>
+      </section>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* 3. Today's Focus */}
         <section className="zen-slide-up flex flex-col gap-4" style={{ animationDelay: '0.15s' }}>
@@ -75,7 +109,11 @@ export default function Dashboard() {
                   task={task} 
                   onToggle={toggleTask} 
                   onDelete={deleteTask} 
-                  onEdit={editTask} 
+                  onEdit={editTask}
+                  onTogglePin={togglePin}
+                  onAddSubtask={addSubtask}
+                  onToggleSubtask={toggleSubtask}
+                  onDeleteSubtask={deleteSubtask}
                 />
               ))
             ) : (

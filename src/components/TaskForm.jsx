@@ -2,6 +2,15 @@ import { useState } from 'react';
 
 const CATEGORIES = ['Work', 'Study', 'Personal'];
 const PRIORITIES  = ['High', 'Medium', 'Low'];
+const RECURRENCES = ['none', 'daily', 'weekly', 'monthly'];
+const CATEGORY_LABELS = { Work: 'Pekerjaan', Study: 'Belajar', Personal: 'Pribadi' };
+const PRIORITY_LABELS = { High: 'Tinggi', Medium: 'Sedang', Low: 'Rendah' };
+const RECURRENCE_LABELS = {
+  none: 'Tidak berulang',
+  daily: 'Harian',
+  weekly: 'Mingguan',
+  monthly: 'Bulanan',
+};
 
 /**
  * TaskForm — task creation form.
@@ -10,14 +19,22 @@ export default function TaskForm({ onAdd }) {
   const [title,    setTitle]    = useState('');
   const [category, setCategory] = useState('Personal');
   const [priority, setPriority] = useState('Medium');
+  const [recurring, setRecurring] = useState('none');
   const [dueDate,  setDueDate]  = useState('');   // ← pindah ke dalam komponen
+  const [tagsInput, setTagsInput] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onAdd(title.trim(), category, priority, dueDate || null);
+    const tags = tagsInput
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+    onAdd(title.trim(), category, priority, dueDate || null, recurring, tags);
     setTitle('');
     setDueDate('');
+    setRecurring('none');
+    setTagsInput('');
   };
 
   const inputHeight = { height: '44px' };
@@ -25,81 +42,136 @@ export default function TaskForm({ onAdd }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="zen-card p-4 sm:p-5 zen-fade-in flex flex-col gap-3"
+      className="zen-card p-4 sm:p-5 zen-fade-in flex flex-col gap-4"
       id="task-form"
     >
-      {/* Row 1: Title — full width */}
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)}
-        placeholder="Apa yang ingin kamu kerjakan?"
-        className="zen-input w-full"
-        style={inputHeight}
-        id="task-title-input"
-        autoComplete="off"
-      />
-
-      {/* Row 2: Date + Category + Priority + Button */}
-      {/* Mobile: stack vertical. sm+: 4 kolom */}
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-3">
-
-        {/* Due date input */}
+      <div className="space-y-1.5">
+        <label
+          htmlFor="task-title-input"
+          className="text-sm font-medium text-zen-text dark:text-zen-text-dark"
+        >
+          Judul tugas
+        </label>
         <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="zen-input w-full cursor-pointer"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)}
+          placeholder="Contoh: Selesaikan laporan bulanan"
+          className="zen-input w-full"
           style={inputHeight}
-          id="task-due-date-input"
+          id="task-title-input"
+          autoComplete="off"
         />
+      </div>
 
-        {/* Category dropdown */}
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="zen-input w-full cursor-pointer"
-          style={inputHeight}
-          id="task-category-select"
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="space-y-1.5">
+          <label
+            htmlFor="task-due-date-input"
+            className="text-sm font-medium text-zen-text dark:text-zen-text-dark"
+          >
+            Tenggat
+          </label>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="zen-input w-full cursor-pointer"
+            style={inputHeight}
+            id="task-due-date-input"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label
+            htmlFor="task-category-select"
+            className="text-sm font-medium text-zen-text dark:text-zen-text-dark"
+          >
+            Kategori
+          </label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="zen-input w-full cursor-pointer"
+            style={inputHeight}
+            id="task-category-select"
+          >
+            {CATEGORIES.map(c => (
+              <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <label
+            htmlFor="task-priority-select"
+            className="text-sm font-medium text-zen-text dark:text-zen-text-dark"
+          >
+            Prioritas
+          </label>
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+            className="zen-input w-full cursor-pointer"
+            style={inputHeight}
+            id="task-priority-select"
+          >
+            {PRIORITIES.map(p => (
+              <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <label
+            htmlFor="task-recurring-select"
+            className="text-sm font-medium text-zen-text dark:text-zen-text-dark"
+          >
+            Berulang
+          </label>
+          <select
+            value={recurring}
+            onChange={(e) => setRecurring(e.target.value)}
+            className="zen-input w-full cursor-pointer"
+            style={inputHeight}
+            id="task-recurring-select"
+          >
+            {RECURRENCES.map((value) => (
+              <option key={value} value={value}>
+                {RECURRENCE_LABELS[value]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <label
+          htmlFor="task-tags-input"
+          className="text-sm font-medium text-zen-text dark:text-zen-text-dark"
         >
-          {CATEGORIES.map(c => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
+          Tag
+        </label>
+        <input
+          id="task-tags-input"
+          type="text"
+          value={tagsInput}
+          onChange={(e) => setTagsInput(e.target.value)}
+          className="zen-input w-full"
+          placeholder="Contoh: kampus, urgent, klien-a"
+        />
+      </div>
 
-        {/* Priority dropdown */}
-        <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value)}
-          className="zen-input w-full cursor-pointer"
-          style={inputHeight}
-          id="task-priority-select"
-        >
-          {PRIORITIES.map(p => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
-
-        {/* Add button */}
+      <div className="flex justify-end pt-1">
         <button
           type="submit"
-          className="zen-btn-primary flex items-center justify-center gap-2 w-full sm:w-auto px-6 whitespace-nowrap"
+          className="zen-btn-primary flex items-center justify-center w-full sm:w-auto px-6 whitespace-nowrap"
           style={inputHeight}
           id="add-task-btn"
         >
-          <svg
-            width="16" height="16"
-            viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2.5"
-            strokeLinecap="round" strokeLinejoin="round"
-          >
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5"  y1="12" x2="19" y2="12"/>
-          </svg>
-          <span>Tambah</span>
+          <span>Tambah Tugas</span>
         </button>
-
       </div>
     </form>
   );

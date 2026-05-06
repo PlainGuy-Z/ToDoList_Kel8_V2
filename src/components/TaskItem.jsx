@@ -14,16 +14,36 @@ const CATEGORY_STYLES = {
 
 const CATEGORIES = ['Work', 'Study', 'Personal'];
 const PRIORITIES  = ['High', 'Medium', 'Low'];
+const RECURRENCES = ['none', 'daily', 'weekly', 'monthly'];
+const RECURRENCE_LABELS = {
+  none: 'Tidak berulang',
+  daily: 'Harian',
+  weekly: 'Mingguan',
+  monthly: 'Bulanan',
+};
 
-export default function TaskItem({ task, onToggle, onDelete, onEdit }) {
+export default function TaskItem({
+  task,
+  onToggle,
+  onDelete,
+  onEdit,
+  onTogglePin,
+  onAddSubtask,
+  onToggleSubtask,
+  onDeleteSubtask,
+}) {
   const [isEditing,  setIsEditing]  = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [showSubtasks, setShowSubtasks] = useState(false);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
 
   // Edit field states — initialised when edit mode opens
   const [editTitle,    setEditTitle]    = useState(task.title);
   const [editCategory, setEditCategory] = useState(task.category);
   const [editPriority, setEditPriority] = useState(task.priority);
   const [editDueDate,  setEditDueDate]  = useState(task.dueDate ?? '');
+  const [editRecurring, setEditRecurring] = useState(task.recurring ?? 'none');
+  const [editTags, setEditTags] = useState(Array.isArray(task.tags) ? task.tags.join(', ') : '');
 
   const inputRef = useRef(null);
 
@@ -42,6 +62,8 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }) {
       setEditCategory(task.category);
       setEditPriority(task.priority);
       setEditDueDate(task.dueDate ?? '');
+      setEditRecurring(task.recurring ?? 'none');
+      setEditTags(Array.isArray(task.tags) ? task.tags.join(', ') : '');
     }
   }, [task, isEditing]);
 
@@ -51,6 +73,8 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }) {
     setEditCategory(task.category);
     setEditPriority(task.priority);
     setEditDueDate(task.dueDate ?? '');
+    setEditRecurring(task.recurring ?? 'none');
+    setEditTags(Array.isArray(task.tags) ? task.tags.join(', ') : '');
     setIsEditing(true);
   };
 
@@ -62,6 +86,10 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }) {
     if (trimmed            !== task.title)    changes.title    = trimmed;
     if (editCategory       !== task.category) changes.category = editCategory;
     if (editPriority       !== task.priority) changes.priority = editPriority;
+    if (editRecurring      !== (task.recurring ?? 'none')) changes.recurring = editRecurring;
+    const parsedTags = editTags.split(',').map((tag) => tag.trim()).filter(Boolean);
+    const existingTags = Array.isArray(task.tags) ? task.tags : [];
+    if (JSON.stringify(parsedTags) !== JSON.stringify(existingTags)) changes.tags = parsedTags;
     // normalise empty string → null to stay consistent with original data shape
     const newDue = editDueDate || null;
     if (newDue !== (task.dueDate ?? null))    changes.dueDate  = newDue;
@@ -86,8 +114,17 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }) {
     setTimeout(() => onDelete(task.id), 300);
   };
 
+  const handleAddSubtask = () => {
+    if (!onAddSubtask || !newSubtaskTitle.trim()) return;
+    onAddSubtask(task.id, newSubtaskTitle);
+    setNewSubtaskTitle('');
+    setShowSubtasks(true);
+  };
+
   const priorityBorder = PRIORITY_COLORS[task.priority] ?? PRIORITY_COLORS.Medium;
   const categoryStyle  = CATEGORY_STYLES[task.category] ?? CATEGORY_STYLES.Personal;
+  const subtasks = Array.isArray(task.subtasks) ? task.subtasks : [];
+  const completedSubtasks = subtasks.filter((subtask) => subtask.completed).length;
 
   const isOverdue = task.dueDate && !task.completed &&
     new Date(task.dueDate).setHours(23, 59, 59, 999) < Date.now();
@@ -170,11 +207,67 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }) {
                 })}
               </span>
             )}
+
+            {task.recurring && task.recurring !== 'none' && (
+              <span className="text-xs text-zen-muted dark:text-zen-muted-dark flex-shrink-0">
+                {RECURRENCE_LABELS[task.recurring] ?? 'Berulang'}
+              </span>
+            )}
+
+            {Array.isArray(task.tags) && task.tags.length > 0 && task.tags.map((tag) => (
+              <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-zen-surface-hover dark:bg-zen-surface-hover-dark text-zen-muted dark:text-zen-muted-dark">
+                #{tag}
+              </span>
+            ))}
+
+            {subtasks.length > 0 && (
+              <span className="text-xs text-zen-muted dark:text-zen-muted-dark flex-shrink-0">
+                Checklist {completedSubtasks}/{subtasks.length}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Action buttons (visible on hover) */}
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+          {/* Pin button */}
+          {onTogglePin && !task.completed && (
+            <button
+              onClick={() => onTogglePin(task.id)}
+              className="
+                flex-shrink-0 p-1.5 rounded-lg cursor-pointer
+                hover:bg-amber-50 dark:hover:bg-amber-900/20
+                transition-all duration-200
+              "
+              title={task.pinned ? 'Lepas pin tugas' : 'Pin tugas ini'}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill={task.pinned ? 'currentColor' : 'none'}
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                className={task.pinned ? 'text-amber-500' : 'text-zen-muted'}>
+                <path d="M12 17v5"/>
+                <path d="M5 3v4l5 5v5l4-2v-3l5-5V3z"/>
+              </svg>
+            </button>
+          )}
+
+          {onAddSubtask && (
+            <button
+              onClick={() => setShowSubtasks((prev) => !prev)}
+              className="
+                flex-shrink-0 p-1.5 rounded-lg cursor-pointer
+                hover:bg-zen-surface-hover dark:hover:bg-zen-surface-hover-dark
+                transition-all duration-200
+              "
+              title={showSubtasks ? 'Sembunyikan checklist' : 'Buka checklist'}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                className="text-zen-muted">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+            </button>
+          )}
 
           {/* Edit button — only when not completed */}
           {!task.completed && (
@@ -219,6 +312,79 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }) {
         </div>
       </div>
 
+      {/* ── Subtasks panel ───────────────────────────────────────────── */}
+      {showSubtasks && !isEditing && onAddSubtask && (
+        <div
+          className="
+            border-t border-zen-border dark:border-zen-border-dark
+            bg-zen-surface dark:bg-zen-surface-dark
+            px-4 pb-4 pt-3 flex flex-col gap-3
+          "
+        >
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newSubtaskTitle}
+              onChange={(e) => setNewSubtaskTitle(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddSubtask()}
+              className="zen-input py-1.5 px-3 text-sm w-full"
+              placeholder="Tambah checklist..."
+              disabled={task.completed}
+            />
+            <button
+              type="button"
+              onClick={handleAddSubtask}
+              className="zen-btn-secondary px-4 py-1.5 text-sm"
+              disabled={task.completed}
+            >
+              Tambah
+            </button>
+          </div>
+
+          {subtasks.length === 0 ? (
+            <p className="text-xs text-zen-muted dark:text-zen-muted-dark">
+              Belum ada checklist untuk tugas ini.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {subtasks.map((subtask) => (
+                <div
+                  key={subtask.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-zen-border dark:border-zen-border-dark px-3 py-2"
+                >
+                  <label className="flex items-center gap-2 min-w-0 flex-1">
+                    <input
+                      type="checkbox"
+                      checked={subtask.completed}
+                      onChange={() => onToggleSubtask?.(task.id, subtask.id)}
+                      className="accent-zen-sage"
+                      disabled={task.completed}
+                    />
+                    <span
+                      className={`text-sm truncate ${
+                        subtask.completed
+                          ? 'line-through text-zen-muted dark:text-zen-muted-dark'
+                          : 'text-zen-text dark:text-zen-text-dark'
+                      }`}
+                    >
+                      {subtask.title}
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => onDeleteSubtask?.(task.id, subtask.id)}
+                    className="text-xs text-zen-priority-high hover:underline"
+                    disabled={task.completed}
+                  >
+                    Hapus
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Inline edit panel ───────────────────────────────────────── */}
       {isEditing && (
         <div
@@ -239,8 +405,16 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }) {
             placeholder="Judul tugas"
           />
 
+          <input
+            type="text"
+            value={editTags}
+            onChange={(e) => setEditTags(e.target.value)}
+            className="zen-input py-1.5 px-3 text-sm w-full"
+            placeholder="Tag (pisahkan dengan koma)"
+          />
+
           {/* Category · Priority · Due date  — responsive grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
 
             {/* Category */}
             <select
@@ -274,6 +448,19 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }) {
               className="zen-input text-sm cursor-pointer"
               style={{ height: '36px' }}
             />
+
+            <select
+              value={editRecurring}
+              onChange={(e) => setEditRecurring(e.target.value)}
+              className="zen-input text-sm cursor-pointer"
+              style={{ height: '36px' }}
+            >
+              {RECURRENCES.map((value) => (
+                <option key={value} value={value}>
+                  {RECURRENCE_LABELS[value]}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Save / Cancel */}

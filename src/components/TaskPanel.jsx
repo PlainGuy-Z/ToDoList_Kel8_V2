@@ -65,11 +65,10 @@ export default function TaskPanel({ tasks, addTask, toggleTask, deleteTask, edit
         {/* Empty state */}
         {filteredTasks.length === 0 && (
           <div className="zen-card p-10 text-center zen-fade-in">
-            <div className="text-4xl mb-3">🌿</div>
             <p className="text-zen-muted dark:text-zen-muted-dark text-sm font-medium">
               {tasks.length === 0
-                ? 'Belum ada tugas. Mulai dengan menambahkan satu!'
-                : 'Tidak ada yang cocok. Coba ubah filter 🍃'}
+                ? 'Belum ada tugas. Tambahkan tugas pertama Anda.'
+                : 'Tidak ada tugas yang sesuai dengan filter saat ini.'}
             </p>
           </div>
         )}

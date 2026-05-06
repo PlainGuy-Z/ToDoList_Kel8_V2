@@ -7,12 +7,18 @@ import usePomodoro from '../../hooks/usePomodoro';
 
 const NAV_LINKS = [
   { path: '/app/dashboard', label: 'Dashboard', icon: '🏠' },
+  { path: '/app/today', label: 'Hari Ini', icon: '📅' },
+  { path: '/app/planned', label: 'Planned', icon: '🗓️' },
   { path: '/app/tasks', label: 'Tasks', icon: '✅' },
+  { path: '/app/archive', label: 'Archive', icon: '🗃️' },
   { path: '/app/pomodoro', label: 'Pomodoro', icon: '🍅' },
   { path: '/app/stats', label: 'Statistics', icon: '📊' }
 ];
 
-export default function Sidebar() {
+export default function Sidebar({
+  notificationPermission = 'default',
+  onEnableNotifications = () => {},
+}) {
   const { theme, toggleTheme } = useTheme();
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
@@ -22,7 +28,16 @@ export default function Sidebar() {
   const { pomodorosToday } = usePomodoro();
   const { streak } = useStats(tasks, pomodorosToday);
 
-  const activeCount = tasks.filter(t => !t.completed).length;
+  const activeCount = tasks.filter(t => !t.completed && !t.archivedAt).length;
+  const dueTodayCount = tasks.filter((t) => {
+    if (t.completed || t.archivedAt || !t.dueDate) return false;
+    const due = new Date(t.dueDate);
+    if (Number.isNaN(due.getTime())) return false;
+    const today = new Date();
+    const dueStart = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    return dueStart <= todayStart;
+  }).length;
 
   const handleLogout = () => {
     logout();
@@ -78,6 +93,17 @@ export default function Sidebar() {
                   {activeCount > 99 ? '99+' : activeCount}
                 </span>
               )}
+
+              {link.path === '/app/today' && dueTodayCount > 0 && (
+                <span className="
+                  ml-auto hidden lg:flex items-center justify-center
+                  min-w-[20px] h-5 px-1.5
+                  bg-zen-priority-high text-white
+                  text-[10px] font-bold rounded-full
+                ">
+                  {dueTodayCount > 99 ? '99+' : dueTodayCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -92,15 +118,35 @@ export default function Sidebar() {
             </span>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-2 mt-2">
+          <div className="flex flex-col gap-2 mt-2 w-full">
+            {/* Notification Toggle */}
+            <button
+              onClick={onEnableNotifications}
+              className={`
+                flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-xl
+                transition-colors cursor-pointer w-full overflow-hidden
+                ${notificationPermission === 'granted'
+                  ? 'text-zen-sage bg-zen-sage-soft dark:bg-zen-sage/20'
+                  : 'text-zen-muted dark:text-zen-muted-dark hover:text-zen-text dark:hover:text-zen-text-dark hover:bg-[#E8E4DF] dark:hover:bg-[#1E1E1E]'
+                }
+              `}
+              title="Aktifkan notifikasi pengingat"
+              disabled={notificationPermission === 'granted'}
+            >
+              <span className="flex-shrink-0">🔔</span>
+              <span className="hidden lg:block text-sm font-medium truncate">
+                {notificationPermission === 'granted' ? 'Notifikasi Aktif' : 'Aktifkan Notifikasi'}
+              </span>
+            </button>
+
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-xl text-zen-muted dark:text-zen-muted-dark hover:text-zen-text dark:hover:text-zen-text-dark hover:bg-[#E8E4DF] dark:hover:bg-[#1E1E1E] transition-colors cursor-pointer w-full"
+              className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-xl text-zen-muted dark:text-zen-muted-dark hover:text-zen-text dark:hover:text-zen-text-dark hover:bg-[#E8E4DF] dark:hover:bg-[#1E1E1E] transition-colors cursor-pointer w-full overflow-hidden"
               title={theme === 'light' ? 'Mode Gelap' : 'Mode Terang'}
             >
               <span className="flex-shrink-0">{theme === 'light' ? '🌙' : '☀️'}</span>
-              <span className="hidden lg:block text-sm font-medium whitespace-nowrap">
+              <span className="hidden lg:block text-sm font-medium truncate">
                 {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
               </span>
             </button>
@@ -108,7 +154,7 @@ export default function Sidebar() {
             {/* Logout */}
             <button
               onClick={handleLogout}
-              className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-xl text-zen-priority-high hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer w-full"
+              className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-xl text-zen-priority-high hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer w-full overflow-hidden"
               title={`Logout (${currentUser?.username})`}
             >
               <span className="flex-shrink-0">

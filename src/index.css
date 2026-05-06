@@ -107,7 +107,7 @@
   /* Card style */
   .zen-card {
     @apply bg-zen-surface rounded-2xl border border-zen-border;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 8px 24px rgba(45, 45, 45, 0.05);
     transition: all 0.3s ease;
   }
   .dark .zen-card {
@@ -115,7 +115,7 @@
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
   }
   .zen-card:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+    box-shadow: 0 12px 28px rgba(45, 45, 45, 0.08);
   }
   .dark .zen-card:hover {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -126,6 +126,7 @@
     @apply w-full px-4 py-2.5 rounded-xl border border-zen-border bg-zen-surface text-zen-text font-sans;
     outline: none;
     transition: all 0.25s ease;
+    appearance: none;
   }
   .zen-input:focus {
     border-color: var(--color-zen-sage);
@@ -140,6 +141,7 @@
   }
   .zen-input::placeholder {
     @apply text-zen-muted;
+    opacity: 0.85;
   }
 
   /* Button styles */

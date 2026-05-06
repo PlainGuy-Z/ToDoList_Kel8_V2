@@ -8,6 +8,9 @@ import Register from './pages/Login/Register';
 import ZenBoard from './pages/ZenBoard/ZenBoard';
 import Dashboard from './pages/ZenBoard/Dashboard';
 import TasksPage from './pages/ZenBoard/TasksPage';
+import TodayPage from './pages/ZenBoard/TodayPage';
+import PlannedPage from './pages/ZenBoard/PlannedPage';
+import ArchivePage from './pages/ZenBoard/ArchivePage';
 import PomodoroPage from './pages/ZenBoard/PomodoroPage';
 import StatsPage from './pages/ZenBoard/StatsPage';
 
@@ -19,6 +22,9 @@ import StatsPage from './pages/ZenBoard/StatsPage';
  *  /register   → Register (public)
  *  /app        → ZenBoard layout wrapper (protected)
  *    /app/dashboard  → Dashboard
+ *    /app/today      → Today
+ *    /app/planned    → Planned
+ *    /app/archive    → Archive
  *    /app/tasks      → Tasks
  *    /app/pomodoro   → Pomodoro
  *    /app/stats      → Statistics
@@ -41,6 +47,9 @@ function App() {
             >
               <Route index          element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="today"     element={<TodayPage />} />
+              <Route path="planned"   element={<PlannedPage />} />
+              <Route path="archive"   element={<ArchivePage />} />
               <Route path="tasks"     element={<TasksPage />} />
               <Route path="pomodoro"  element={<PomodoroPage />} />
               <Route path="stats"     element={<StatsPage />} />

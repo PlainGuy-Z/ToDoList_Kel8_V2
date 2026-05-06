@@ -3,6 +3,9 @@ import { useState } from 'react';
 import Sidebar from './Sidebar';
 import ShortcutModal from '../ShortcutModal';
 import useKeyboardShortcuts from '../../hooks/useKeyboardShortcuts';
+import useTasks from '../../hooks/useTasks';
+import { useAuth } from '../../contexts/AuthContext';
+import useTaskReminders from '../../hooks/useTaskReminders';
 
 /**
  * AppLayout — wrapper for the sidebar and main scrollable content area.
@@ -10,6 +13,12 @@ import useKeyboardShortcuts from '../../hooks/useKeyboardShortcuts';
 export default function AppLayout() {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const { tasks } = useTasks();
+  const { notificationPermission, requestNotificationPermission } = useTaskReminders({
+    tasks,
+    userId: currentUser?.userId,
+  });
 
   useKeyboardShortcuts({
     onToggleHelp: () => setShowShortcuts(prev => !prev),
@@ -28,7 +37,10 @@ export default function AppLayout() {
   return (
     <div className="flex h-screen bg-zen-bg dark:bg-zen-bg-dark overflow-hidden font-sans">
       {/* Sidebar navigation */}
-      <Sidebar />
+      <Sidebar
+        notificationPermission={notificationPermission}
+        onEnableNotifications={requestNotificationPermission}
+      />
       
       {/* Main content area */}
       <main className="flex-1 h-full overflow-y-auto pb-20 md:pb-0 relative">
