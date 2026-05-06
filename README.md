@@ -15,6 +15,61 @@ Zen Board dikembangkan untuk:
 
 ---
 
+## 🚀 Cara Menjalankan Aplikasi
+
+Ikuti langkah berikut untuk menjalankan project secara lokal:
+
+### 1. Install Node.js
+
+Pastikan sudah menginstall **Node.js (versi 18 atau lebih baru)**.
+
+Cek versi:
+
+```bash
+node -v
+npm -v
+```
+
+---
+
+### 2. Masuk ke Folder Project
+
+Buka terminal lalu arahkan ke folder project:
+
+```bash
+cd zen-board
+```
+
+---
+
+### 3. Install Dependencies
+
+Jalankan perintah berikut:
+
+```bash
+npm install
+```
+
+---
+
+### 4. Jalankan Development Server
+
+```bash
+npm run dev
+```
+
+---
+
+### 5. Buka di Browser
+
+Setelah server berjalan, buka:
+
+```
+http://localhost:5173
+```
+
+---
+
 ## 🧩 Fitur Utama
 
 ### 1. Landing Page & Login
@@ -170,42 +225,11 @@ Aplikasi menggunakan struktur modular:
 
 ### Hooks:
 
-* useTasks → manajemen CRUD tugas
-* usePomodoro → logika timer dan sesi fokus
-* useStats → perhitungan statistik dan streak
+* `useTasks` → manajemen CRUD tugas
+* `usePomodoro` → logika timer dan sesi fokus
+* `useStats` → perhitungan statistik dan streak
 
 ---
-
-🚀 Cara Menjalankan Aplikasi
-
-Ikuti langkah berikut untuk menjalankan project secara lokal:
-
-1. Install Node.js
-
-Pastikan sudah menginstall Node.js (versi 18 atau lebih baru).
-
-Cek versi:
-
-node -v
-npm -v
-2. Masuk ke Folder Project
-
-Buka terminal lalu arahkan ke folder project:
-
-cd zen-board
-3. Install Dependencies
-
-Jalankan perintah berikut:
-
-npm install
-4. Jalankan Development Server
-npm run dev
-5. Buka di Browser
-
-Setelah server berjalan, buka:
-
-http://localhost:5173
-
 
 ## ⚠️ Keterbatasan
 
