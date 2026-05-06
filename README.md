@@ -176,6 +176,37 @@ Aplikasi menggunakan struktur modular:
 
 ---
 
+🚀 Cara Menjalankan Aplikasi
+
+Ikuti langkah berikut untuk menjalankan project secara lokal:
+
+1. Install Node.js
+
+Pastikan sudah menginstall Node.js (versi 18 atau lebih baru).
+
+Cek versi:
+
+node -v
+npm -v
+2. Masuk ke Folder Project
+
+Buka terminal lalu arahkan ke folder project:
+
+cd zen-board
+3. Install Dependencies
+
+Jalankan perintah berikut:
+
+npm install
+4. Jalankan Development Server
+npm run dev
+5. Buka di Browser
+
+Setelah server berjalan, buka:
+
+http://localhost:5173
+
+
 ## ⚠️ Keterbatasan
 
 Karena berbasis frontend-only:
