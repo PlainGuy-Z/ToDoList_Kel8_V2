@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+@utility zen-btn {
+  @apply px-4 py-2 rounded-xl font-medium transition-all duration-300 cursor-pointer;
+}
+
+@utility zen-btn-primary {
+  @apply zen-btn bg-zen-sage text-white hover:opacity-90;
+}
+
+@utility zen-btn-ghost {
+  @apply zen-btn border border-zen-border hover:bg-zen-surface-hover;
+}
+
+@theme {
+  /* ── Zen Color Palette ── */
+  --color-zen-bg: #FAF8F5;
+  --color-zen-bg-dark: #1A1A1A;
+  --color-zen-surface: #FFFFFF;
+  --color-zen-surface-dark: #242424;
+  --color-zen-surface-hover: #F5F2EE;
+  --color-zen-surface-hover-dark: #2E2E2E;
+  --color-zen-text: #3D3D3D;
+  --color-zen-text-dark: #E8E4DF;
+  --color-zen-muted: #8A8580;
+  --color-zen-muted-dark: #9B9590;
+  --color-zen-sage: #8FAE8B;
+  --color-zen-sage-soft: #E8F0E7;
+  --color-zen-rose: #C9A0A0;
+  --color-zen-rose-soft: #F5EAEA;
+  --color-zen-sand: #D4C5A9;
+  --color-zen-sand-soft: #F5F0E6;
+  --color-zen-border: #E8E4DF;
+  --color-zen-border-dark: #333333;
+  --color-zen-priority-high: #D4726A;
+  --color-zen-priority-med: #D4A76A;
+  --color-zen-priority-low: #8FAE8B;
+
+  /* ── Typography ── */
+  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+
+/* ── Animations ── */
+@keyframes zen-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes zen-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes zen-pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes zen-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes zen-task-remove {
+  to { opacity: 0; transform: translateX(-20px); height: 0; margin: 0; padding: 0; overflow: hidden; }
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-zen-bg text-zen-text antialiased font-sans;
+    transition: background-color 0.4s ease, color 0.4s ease;
+    line-height: 1.6;
+  }
+
+  .dark body {
+    @apply bg-zen-bg-dark text-zen-text-dark;
+  }
+
+  /* Smooth transitions for all themed elements */
+  *:not(input):not(textarea) {
+    transition-property: background-color, border-color, box-shadow;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  input, textarea, select, button {
+    font-family: var(--font-sans);
+  }
+}
+
+@layer utilities {
+  /* Card style */
+  .zen-card {
+    @apply bg-zen-surface rounded-2xl border border-zen-border;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+  }
+  .dark .zen-card {
+    @apply bg-zen-surface-dark border-zen-border-dark;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  }
+  .zen-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  }
+  .dark .zen-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Input style */
+  .zen-input {
+    @apply w-full px-4 py-2.5 rounded-xl border border-zen-border bg-zen-surface text-zen-text font-sans;
+    outline: none;
+    transition: all 0.25s ease;
+  }
+  .zen-input:focus {
+    border-color: var(--color-zen-sage);
+    box-shadow: 0 0 0 3px rgba(143, 174, 139, 0.15);
+  }
+  .dark .zen-input {
+    @apply bg-zen-surface-dark border-zen-border-dark text-zen-text-dark;
+  }
+  .dark .zen-input:focus {
+    border-color: var(--color-zen-sage);
+    box-shadow: 0 0 0 3px rgba(143, 174, 139, 0.2);
+  }
+  .zen-input::placeholder {
+    @apply text-zen-muted;
+  }
+
+  /* Button styles */
+  .zen-btn {
+    @apply px-5 py-2.5 rounded-xl font-medium font-sans cursor-pointer;
+    transition: all 0.25s ease;
+    border: none;
+  }
+  .zen-btn:active {
+    transform: scale(0.97);
+  }
+  .zen-btn-primary {
+    @apply zen-btn bg-zen-sage text-white;
+  }
+  .zen-btn-primary:hover {
+    filter: brightness(0.92);
+    box-shadow: 0 4px 14px rgba(143, 174, 139, 0.35);
+  }
+  .zen-btn-secondary {
+    @apply zen-btn bg-zen-surface border border-zen-border text-zen-text;
+  }
+  .dark .zen-btn-secondary {
+    @apply bg-zen-surface-dark border-zen-border-dark text-zen-text-dark;
+  }
+  .zen-btn-secondary:hover {
+    @apply bg-zen-surface-hover;
+  }
+  .dark .zen-btn-secondary:hover {
+    @apply bg-zen-surface-hover-dark;
+  }
+  .zen-btn-danger {
+    @apply zen-btn text-zen-priority-high;
+    background: transparent;
+    border: 1px solid transparent;
+  }
+  .zen-btn-danger:hover {
+    background: rgba(212, 114, 106, 0.1);
+    border-color: rgba(212, 114, 106, 0.2);
+  }
+
+  /* Animations */
+  .zen-fade-in {
+    animation: zen-fade-in 0.4s ease both;
+  }
+  .zen-slide-up {
+    animation: zen-slide-up 0.5s ease both;
+  }
+  .zen-scale-in {
+    animation: zen-scale-in 0.3s ease both;
+  }
+
+  /* Badge */
+  .zen-badge {
+    @apply text-xs font-medium px-2.5 py-0.5 rounded-full;
+  }
+
+  /* Scrollbar */
+  .zen-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  .zen-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .zen-scroll::-webkit-scrollbar-thumb {
+    @apply bg-zen-border rounded-full;
+  }
+  .dark .zen-scroll::-webkit-scrollbar-thumb {
+    @apply bg-zen-border-dark;
+  }
+}
