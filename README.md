@@ -1,16 +1,256 @@
-# React + Vite
+# Zen Board
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Zen Board adalah aplikasi web produktivitas berbasis React yang dirancang untuk membantu pengguna tetap fokus, tenang, dan terorganisir dalam menjalankan aktivitas sehari-hari. Aplikasi ini menggabungkan manajemen tugas, Pomodoro timer, dan statistik harian dalam satu tampilan yang sederhana dan elegan.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🎯 Tujuan Aplikasi
 
-## React Compiler
+Zen Board dikembangkan untuk:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* Membantu pengguna mengelola tugas secara efektif
+* Meningkatkan fokus menggunakan teknik Pomodoro
+* Melacak progres harian melalui statistik sederhana
+* Memberikan pengalaman penggunaan yang nyaman dan tidak berisik secara visual
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Cara Menjalankan Aplikasi
+
+Ikuti langkah berikut untuk menjalankan project secara lokal:
+
+### 1. Install Node.js
+
+Pastikan sudah menginstall **Node.js (versi 18 atau lebih baru)**.
+
+Cek versi:
+
+```bash
+node -v
+npm -v
+```
+
+---
+
+### 2. Masuk ke Folder Project
+
+Buka terminal lalu arahkan ke folder project:
+
+```bash
+cd zen-board
+```
+
+---
+
+### 3. Install Dependencies
+
+Jalankan perintah berikut:
+
+```bash
+npm install
+```
+
+---
+
+### 4. Jalankan Development Server
+
+```bash
+npm run dev
+```
+
+---
+
+### 5. Buka di Browser
+
+Setelah server berjalan, buka:
+
+```
+http://localhost:5173
+```
+
+---
+
+## 🧩 Fitur Utama
+
+### 1. Landing Page & Login
+
+* Landing page sebagai halaman awal aplikasi
+* Login sederhana untuk menyimpan sesi pengguna
+* Data pengguna disimpan secara lokal menggunakan localStorage
+* Tidak menggunakan sistem autentikasi kompleks (simulasi)
+
+---
+
+### 2. Dashboard (Zen Workspace)
+
+Setelah login, pengguna masuk ke halaman utama yang terdiri dari:
+
+* Tampilan sapaan dinamis (Good morning / evening)
+* Informasi tanggal saat ini
+* Ringkasan tugas harian
+
+---
+
+### 3. Manajemen Tugas (Tasks)
+
+#### Fitur:
+
+* Menambahkan tugas baru dengan:
+
+  * Judul
+  * Tanggal
+  * Kategori (Work, Study, Personal)
+  * Prioritas (High, Medium, Low)
+* Mengedit tugas secara langsung (inline edit)
+* Menandai tugas sebagai selesai
+* Menghapus tugas
+* Pencarian tugas secara real-time
+* Filter berdasarkan:
+
+  * Kategori
+  * Status (All, Active, Completed)
+
+#### Tampilan:
+
+* Desain berbasis card dengan sudut membulat
+* Indikator warna berdasarkan prioritas
+* Badge kategori
+* Tugas selesai ditampilkan dengan efek fade dan strikethrough
+
+---
+
+### 4. Pomodoro Timer
+
+#### Fitur:
+
+* Mode fokus (25 menit)
+* Mode istirahat (5 menit)
+* Tombol:
+
+  * Mulai
+  * Pause
+  * Reset
+* Perpindahan otomatis antara fokus dan istirahat
+* Indikator sesi Pomodoro harian
+* Animasi halus selama timer berjalan
+* Notifikasi suara menggunakan Web Audio API
+
+---
+
+### 5. Daily Statistics
+
+Menampilkan statistik dalam bentuk grid:
+
+* ✅ Selesai Hari Ini
+* 📋 Sisa Tugas
+* 🍅 Pomodoro Hari Ini
+* 🔥 Hari Beruntun (Streak)
+
+#### Fitur tambahan:
+
+* Perhitungan streak berdasarkan aktivitas harian
+* Statistik diperbarui secara real-time
+* Tampilan minimal tanpa grafik kompleks
+
+---
+
+### 6. Halaman Statistics
+
+Menampilkan ringkasan produktivitas secara keseluruhan:
+
+* Total tugas dibuat
+* Total tugas selesai
+* Total Pomodoro
+* Best streak
+* Distribusi tugas berdasarkan kategori
+* Distribusi tugas berdasarkan prioritas
+
+---
+
+### 7. Dark Mode & Light Mode
+
+* Toggle tema gelap dan terang
+* Disimpan di localStorage (`zenboard-darkmode`)
+* Transisi warna halus (smooth transition)
+* Menggunakan palet warna “Zen” (soft, tidak kontras tinggi)
+
+---
+
+## 🎨 Desain & UI
+
+Zen Board menggunakan pendekatan desain:
+
+* Minimalis dan profesional
+* Warna lembut (sage green, dusty tones, neutral)
+* Layout terstruktur:
+
+  * Sidebar navigasi
+  * Main content
+* Card-based UI dengan spacing luas
+* Animasi ringan dan tidak mengganggu
+
+---
+
+## 💾 Penyimpanan Data
+
+Semua data disimpan menggunakan **localStorage**, termasuk:
+
+* `zenboard-user` → data pengguna aktif
+* `zenboard-tasks` → daftar tugas
+* `zenboard-darkmode` → preferensi tema
+* `zenboard-streak` → data streak harian
+* `zenboard-pomodoros` → jumlah sesi Pomodoro per hari
+
+### Karakteristik:
+
+* Data persisten selama tidak dihapus browser
+* Tidak membutuhkan backend
+* Bekerja secara offline
+
+---
+
+## ⚙️ Arsitektur Aplikasi
+
+Aplikasi menggunakan struktur modular:
+
+### Components:
+
+* Header
+* TaskPanel
+* TaskForm
+* TaskItem
+* TaskFilters
+* PomodoroTimer
+* DailyStats
+
+### Hooks:
+
+* `useTasks` → manajemen CRUD tugas
+* `usePomodoro` → logika timer dan sesi fokus
+* `useStats` → perhitungan statistik dan streak
+
+---
+
+## ⚠️ Keterbatasan
+
+Karena berbasis frontend-only:
+
+* Tidak ada sinkronisasi antar perangkat
+* Data hanya tersimpan di browser pengguna
+* Tidak ada sistem autentikasi yang aman
+* Tidak mendukung kolaborasi multi-user
+
+---
+
+## 🚀 Kesimpulan
+
+Zen Board adalah aplikasi produktivitas yang mengutamakan:
+
+* Kesederhanaan
+* Fokus
+* Kenyamanan visual
+* Kemudahan penggunaan
+
+Dengan menggabungkan task management, Pomodoro timer, dan statistik dalam satu workspace, Zen Board memberikan pengalaman kerja yang lebih terarah tanpa kompleksitas yang berlebihan.
+
+Aplikasi ini juga menjadi fondasi yang baik untuk pengembangan lebih lanjut ke arah backend, real-time sync, atau fitur kolaborasi di masa depan.
